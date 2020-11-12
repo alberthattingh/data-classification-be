@@ -1,35 +1,26 @@
+require('dotenv').config();
+
 const express = require('express');
-const router = express.Router();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const {MongoClient} = require('mongodb');
 
-let mongoUser, mongoPass, mongoDatabase, connectionString;
-function setConfigValues() {
-  let json;
-  try {
-    json = require('../secret/mongo.json');
-  }
-  catch {
-    json = null;
-  }
+const router = express.Router();
 
-  mongoUser = process.env.MONGO_USER || json.user;
-  mongoPass = process.env.MONGO_PASS || json.password;
-  mongoDatabase = process.env.MONGO_DB || json.database;
-
-  connectionString = `mongodb+srv://${mongoUser}:${mongoPass}@cluster0.a009p.mongodb.net/${mongoDatabase}?retryWrites=true&w=majority`;
-}
+const MONGO_USER = process.env.MONGO_USER;
+const MONGO_PASS = process.env.MONGO_PASS;
+const MONGO_DB = process.env.MONGO_DB;
+const CONNECTION_STRING = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@cluster0.a009p.mongodb.net/${MONGO_DB}?retryWrites=true&w=majority`;
 
 async function createNewUser(user) {
-  setConfigValues();
-  const client = new MongoClient(connectionString);
+  const client = new MongoClient(CONNECTION_STRING);
 
   try {
     // Connect to the MongoDB cluster
     await client.connect();
 
     // Make the appropriate DB calls
-    const result = await client.db(mongoDatabase).collection('user').insertOne(user);
+    const result = await client.db(MONGO_DB).collection('user').insertOne(user);
     // console.log("Users:");
     // console.log(result);
 
@@ -44,15 +35,14 @@ async function createNewUser(user) {
 }
 
 async function getUserByUsername(username) {
-  setConfigValues();
-  const client = new MongoClient(connectionString);
+  const client = new MongoClient(CONNECTION_STRING);
 
   try {
     // Connect to the MongoDB cluster
     await client.connect();
 
     // Make the appropriate DB calls
-    const result = await client.db(mongoDatabase).collection('user').findOne({username: username});
+    const result = await client.db(MONGO_DB).collection('user').findOne({username: username});
     // console.log("Users:");
     // console.log(result);
 
@@ -64,6 +54,10 @@ async function getUserByUsername(username) {
   finally {
     await client.close();
   }
+}
+
+function generateAccessToken(user) {
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
 }
 
 /* POST new user */
@@ -82,6 +76,7 @@ router.post('/', async (req, res) => {
   }
 });
 
+/* POST login a user */
 router.post('/login', async (req, res) => {
   getUserByUsername(req.body.username).then(async (result) => {
     if (result == null || result.length < 1) {
@@ -90,7 +85,9 @@ router.post('/login', async (req, res) => {
     else {
       try {
           if(await bcrypt.compare(req.body.password, result.password)) {
-            res.send('Login successful');
+            // login successful -- now send access token
+            const token = generateAccessToken({username: req.body.username});
+            res.json({access_token: token});
           } else {
             res.status(404).send('Not Allowed');
           }
