@@ -25,6 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/classify', classifyRouter);
+// app.use('/uploads', express.static('uploads')); // uncomment if you want files to be publicly accessible
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
