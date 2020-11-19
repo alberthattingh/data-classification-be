@@ -87,20 +87,24 @@ async function readTextFileIntoRowsOfFields(file, sep) {
 
 // Function that classifies the data in the file
 async function classify(file) {
-    if (file.originalname.endsWith('.xlsx') || file.originalname.endsWith(".xls")) {
+    if (file.originalname.endsWith('.xlsx')) {
         const rowsOfFields = await readExcelFileIntoRows(file);
+        fs.unlinkSync(file.path);
         return rowsOfFields;
     }
     else if (file.originalname.endsWith('.txt')) {
         const rowsOfFields = await readTextFileIntoRowsOfFields(file, '|');
+        fs.unlinkSync(file.path);
         return rowsOfFields;
     }
     else if (file.originalname.endsWith('.csv')) {
         const rowsOfFields = await readTextFileIntoRowsOfFields(file, ',');
+        fs.unlinkSync(file.path);
         return rowsOfFields;
     }
     else if (file.originalname.endsWith('.json')) {
         // Not supported at the moment -- add support at later stage
+        fs.unlinkSync(file.path);
         return [];
     }
     else {
