@@ -53,11 +53,13 @@ function authenticateToken(req, res, next) {
 async function readExcelFileIntoRows(file) {
     return readExcel(file.path).then((rows) => {
         const newRows = [];
+        let counter = 0;
         for (let row of rows) {
             const columns = [];
             for (let i = 0; i < row.length; i++) {
-                const field = new Field(i, row[i]);
+                const field = new Field(counter, row[i]);
                 columns.push(field);
+                counter++;
             }
             newRows.push(columns);
         }
@@ -72,12 +74,14 @@ async function readTextFileIntoRowsOfFields(file, sep) {
     const lines = fileAsString.split('\n');
 
     const rows = [];
+    let counter = 0;
     for (let line of lines) {
         const divs = line.split(sep);
         const columns = [];
         for (let i = 0; i < divs.length; i++) {
-            const field = new Field(i, divs[i]);
+            const field = new Field(counter, divs[i]);
             columns.push(field);
+            counter++;
         }
         rows.push(columns);
     }
