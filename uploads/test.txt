@@ -1,0 +1,2 @@
+Albert|Hattingh|93 Bendor Avenue|0761833376|30000|Male|White
+Carmen|Britz|11 Boekenhout Street|0768807196|32000|Female|White
