@@ -76,7 +76,7 @@ async function readTextFileIntoRowsOfFields(file, sep) {
 }
 
 // Function that classifies the data in the file
-async function classify(file) {
+async function parseFile(file) {
     if (file.originalname.endsWith('.xlsx')) {
         const rowsOfFields = await readExcelFileIntoRows(file);
         fs.unlinkSync(file.path);
@@ -105,6 +105,65 @@ async function classify(file) {
     }
 }
 
+function classifyFields(rows) {
+    // RegEx patterns
+    const EMAIL = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g ;
+    const ADDRESS = /^\d+\s[A-z]+\s[A-z]+/g ;
+    const SA_ID = /^(((\d{2}((0[13578]|1[02])(0[1-9]|[12]\d|3[01])|(0[13456789]|1[012])(0[1-9]|[12]\d|30)|02(0[1-9]|1\d|2[0-8])))|([02468][048]|[13579][26])0229))(( |-)(\d{4})( |-)(\d{3})|(\d{7}))$/g ;
+    const CELL = /^((?:\+27|27)|0)(=60|61|71|81|72|82|73|83|74|84|75|85|76|86|79)(\d{7})$/g ;
+    const RACE = /^((white)|(black)|(caucasion)|(african)|(coloured)|(indian)|(asian))$/gi ;
+    const SEX = /^((male)|(female)|(non-binary)|(non binary))$/gi ;
+    const MARITAL = /^((single)|(married)|(divorced)|(widowed)|(separated))$/gi ;
+    const LANG = /^((afr)|(afrikaans)|(zulu)|(sotho)|(english)|(eng)|(venda)|(xhosa)|(tswana)|(ndebele)|(swati)|(tsonga))$/gi ;
+    const ORIENTATION = /^((straight)|(heterosexual)|(gay)|(homosexual)|(lesbian))$/gi ;
+
+    for (let row of rows) {
+        for (let field of row) {
+            if (EMAIL.test(field.value)) {
+                field.setClassificationStatus(true);
+                field.setClassifiedAs("Email Address");
+            }
+            else if (SA_ID.test(field.value)) {
+                field.setClassificationStatus(true);
+                field.setClassifiedAs("ID Number");
+            }
+            else if (CELL.test(field.value)) {
+                field.setClassificationStatus(true);
+                field.setClassifiedAs("Cell Number");
+            }
+            else if (RACE.test(field.value)) {
+                field.setClassificationStatus(true);
+                field.setClassifiedAs("Ethnicity");
+            }
+            else if (LANG.test(field.value)) {
+                field.setClassificationStatus(true);
+                field.setClassifiedAs("Language");
+            }
+            else if (ORIENTATION.test(field.value)) {
+                field.setClassificationStatus(true);
+                field.setClassifiedAs("Sexual Orientation");
+            }
+            else if (ADDRESS.test(field.value)) {
+                field.setClassificationStatus(true);
+                field.setClassifiedAs("Street Address");
+            }
+            else if (MARITAL.test(field.value)) {
+                field.setClassificationStatus(true);
+                field.setClassifiedAs("Marital Status");
+            }
+            else if (SEX.test(field.value)) {
+                field.setClassificationStatus(true);
+                field.setClassifiedAs("Gender");
+            }
+            else {
+                field.setClassificationStatus(false);
+            }
+        }
+    }
+
+    return rows;
+}
+
 
 /* The actual endpoint -- handles POST request to classify data in a file */
 router.post('/', auth, upload.single('dataFile'), (req, res) => {
@@ -112,14 +171,16 @@ router.post('/', auth, upload.single('dataFile'), (req, res) => {
     const file = req.file;
     // console.log(file);
 
-    classify(file).then((classifiedData) => {
-        if (classifiedData.length > 0) {
+    parseFile(file).then((rowsOfFields) => {
+        if (rowsOfFields.length > 0) {
+            const classifiedData = classifyFields(rowsOfFields);
+
             res.json({username: req.user.username,
                 filename: req.file.filename,
                 data: classifiedData});
         }
         else {
-            res.json({username: req.user.username, data: classifiedData});
+            res.json({username: req.user.username, data: rowsOfFields});
         }
     });
 });
