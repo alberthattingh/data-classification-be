@@ -6,7 +6,7 @@ class Field {
 
         // Default
         this.setClassificationStatus(false);
-        this.setClassifiedAs(null);
+        this.setCategory(null);
     }
 
     setNumber(num) {
@@ -21,8 +21,8 @@ class Field {
         this.isClassified = status;
     }
 
-    setClassifiedAs(classification) {
-        this.classifiedAs = classification;
+    setCategory(classification) {
+        this.category = classification;
     }
 }
 
