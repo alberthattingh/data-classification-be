@@ -8,6 +8,7 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var classifyRouter = require('./routes/classify');
+var saveRouter = require('./routes/save');
 
 var app = express();
 app.use(cors());
@@ -25,6 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/classify', classifyRouter);
+app.use('/save', saveRouter);
 // app.use('/uploads', express.static('uploads')); // uncomment if you want files to be publicly accessible
 
 // catch 404 and forward to error handler

@@ -7,15 +7,10 @@ class Field {
         // Default
         this.setClassificationStatus(false);
         this.setClassifiedAs(null);
-        this.setName(null);
     }
 
     setNumber(num) {
         this.number = num;
-    }
-
-    setName(name) {
-        this.name = name;
     }
 
     setValue(val) {
