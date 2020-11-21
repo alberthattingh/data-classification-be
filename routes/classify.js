@@ -121,39 +121,39 @@ function classifyFields(rows) {
         for (let field of row) {
             if (EMAIL.test(field.value)) {
                 field.setClassificationStatus(true);
-                field.setClassifiedAs("Email Address");
+                field.setCategory("Email Address");
             }
             else if (SA_ID.test(field.value)) {
                 field.setClassificationStatus(true);
-                field.setClassifiedAs("ID Number");
+                field.setCategory("ID Number");
             }
             else if (CELL.test(field.value)) {
                 field.setClassificationStatus(true);
-                field.setClassifiedAs("Cell Number");
+                field.setCategory("Cell Number");
             }
             else if (RACE.test(field.value)) {
                 field.setClassificationStatus(true);
-                field.setClassifiedAs("Ethnicity");
+                field.setCategory("Ethnicity");
             }
             else if (LANG.test(field.value)) {
                 field.setClassificationStatus(true);
-                field.setClassifiedAs("Language");
+                field.setCategory("Language");
             }
             else if (ORIENTATION.test(field.value)) {
                 field.setClassificationStatus(true);
-                field.setClassifiedAs("Sexual Orientation");
+                field.setCategory("Sexual Orientation");
             }
             else if (ADDRESS.test(field.value)) {
                 field.setClassificationStatus(true);
-                field.setClassifiedAs("Street Address");
+                field.setCategory("Street Address");
             }
             else if (MARITAL.test(field.value)) {
                 field.setClassificationStatus(true);
-                field.setClassifiedAs("Marital Status");
+                field.setCategory("Marital Status");
             }
             else if (SEX.test(field.value)) {
                 field.setClassificationStatus(true);
-                field.setClassifiedAs("Gender");
+                field.setCategory("Gender");
             }
             else {
                 field.setClassificationStatus(false);

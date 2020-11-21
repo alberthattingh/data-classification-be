@@ -25,8 +25,8 @@ function filterAndReformat(data, filename) {
                 field.FieldNumber = field.number;
                 delete field.number;
 
-                field.ClassifiedAs = field.classifiedAs;
-                delete field.classifiedAs;
+                field.Category = field.category;
+                delete field.category;
 
                 fields.push(field);
             }
