@@ -1,10 +1,10 @@
 var express = require('express');
 var router = express.Router();
 const fs = require('fs');
-const jwt = require('jsonwebtoken');
+const auth = require('../src/auth');
 const multer = require('multer');
 const readExcel = require('read-excel-file/node');
-const Field = require('../models/field');
+const Field = require('../src/field');
 
 // Set configurations for storing uploaded files with multer
 const storage = multer.diskStorage({
@@ -33,22 +33,6 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({storage: storage, fileFilter: fileFilter});
 
-/* Middleware -- runs before request is handled -- to authenticate access token */
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token == null)
-        return res.sendStatus(401);
-
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        // console.log(err);
-        if (err)
-            return res.sendStatus(403);
-        req.user = user;
-        next();
-    });
-}
-
 // Function to read and parse an excel file into an array of fields
 async function readExcelFileIntoRows(file) {
     return readExcel(file.path).then((rows) => {
@@ -58,7 +42,9 @@ async function readExcelFileIntoRows(file) {
             const columns = [];
             for (let i = 0; i < row.length; i++) {
                 const field = new Field(counter, row[i]);
-                columns.push(field);
+                if (field.value !== null) {
+                    columns.push(field);
+                }
                 counter++;
             }
             newRows.push(columns);
@@ -121,14 +107,16 @@ async function classify(file) {
 
 
 /* The actual endpoint -- handles POST request to classify data in a file */
-router.post('/', authenticateToken, upload.single('dataFile'), (req, res) => {
+router.post('/', auth, upload.single('dataFile'), (req, res) => {
     const username = req.user.username;
     const file = req.file;
     // console.log(file);
 
     classify(file).then((classifiedData) => {
         if (classifiedData.length > 0) {
-            res.json({username: req.user.username, data: classifiedData});
+            res.json({username: req.user.username,
+                filename: req.file.filename,
+                data: classifiedData});
         }
         else {
             res.json({username: req.user.username, data: classifiedData});
