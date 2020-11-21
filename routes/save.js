@@ -25,14 +25,14 @@ function filterAndReformat(data, filename) {
                 field.FieldNumber = field.number;
                 delete field.number;
 
-                field.ClassifiedAd = field.classifiedAs;
+                field.ClassifiedAs = field.classifiedAs;
                 delete field.classifiedAs;
 
                 fields.push(field);
             }
         }
         if (fields.length > 0) {
-            finalData.push({file: filename, fields: fields});
+            finalData.push({uploadDate: new Date().toISOString(), file: filename, fields: fields});
         }
     }
 
