@@ -13,7 +13,7 @@ const MONGO_DB = process.env.MONGO_DB;
 const CONNECTION_STRING = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@cluster0.a009p.mongodb.net/${MONGO_DB}?retryWrites=true&w=majority`;
 
 async function createNewUser(user) {
-  const client = new MongoClient(CONNECTION_STRING);
+  const client = new MongoClient(CONNECTION_STRING, { useUnifiedTopology: true });
 
   try {
     // Connect to the MongoDB cluster
@@ -35,7 +35,7 @@ async function createNewUser(user) {
 }
 
 async function getUserByUsername(username) {
-  const client = new MongoClient(CONNECTION_STRING);
+  const client = new MongoClient(CONNECTION_STRING, { useUnifiedTopology: true });
 
   try {
     // Connect to the MongoDB cluster
@@ -61,15 +61,21 @@ function generateAccessToken(user) {
 }
 
 /* POST new user */
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
   try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const user = { username: req.body.username, password: hashedPassword };
+    getUserByUsername(req.body.username).then(async (result) => {
+      if (result == null) {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const user = { username: req.body.username, password: hashedPassword };
 
-    createNewUser(user).then((result) => {
-      res.status(201).send("User created successfully.");
+        createNewUser(user).then((result) => {
+          res.status(201).send("User created successfully.");
+        });
+      }
+      else {
+        res.status(400).send("Username already taken");
+      }
     });
-
   }
   catch {
     res.status(500).send();

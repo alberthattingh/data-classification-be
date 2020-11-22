@@ -5,6 +5,7 @@ const auth = require('../src/auth');
 const multer = require('multer');
 const readExcel = require('read-excel-file/node');
 const Field = require('../src/field');
+const {MongoClient} = require('mongodb');
 
 // Set configurations for storing uploaded files with multer
 const storage = multer.diskStorage({
@@ -32,6 +33,34 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({storage: storage, fileFilter: fileFilter});
+
+// Method to get all records from the database meta collection
+async function getAllPreviouslyClassifiedData() {
+    const MONGO_USER = process.env.MONGO_USER;
+    const MONGO_PASS = process.env.MONGO_PASS;
+    const MONGO_DB = process.env.MONGO_DB;
+    const CONNECTION_STRING = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@cluster0.a009p.mongodb.net/${MONGO_DB}?retryWrites=true&w=majority`;
+
+    const client = new MongoClient(CONNECTION_STRING, { useUnifiedTopology: true });
+
+    try {
+        // Connect to the MongoDB cluster
+        await client.connect();
+
+        // Make the appropriate DB calls
+        const result = await client.db(MONGO_DB).collection('meta').find({}).toArray();
+        // console.log("Users:");
+        // console.log(result);
+
+        return result;
+    }
+    catch (e) {
+        console.error("Error: " + e);
+    }
+    finally {
+        await client.close();
+    }
+}
 
 // Function to read and parse an excel file into an array of fields
 async function readExcelFileIntoRows(file) {
@@ -65,7 +94,7 @@ async function readTextFileIntoRowsOfFields(file, sep) {
         const divs = line.split(sep);
         const columns = [];
         for (let i = 0; i < divs.length; i++) {
-            const field = new Field(counter, divs[i]);
+            const field = new Field(counter, divs[i].trim());
             columns.push(field);
             counter++;
         }
@@ -183,6 +212,18 @@ router.post('/', auth, upload.single('dataFile'), (req, res) => {
             res.json({username: req.user.username, data: rowsOfFields});
         }
     });
+});
+
+/* Endpoint that handles GET requests -- gets all data from DB to display to user */
+router.get('/', auth, (req, res, next) => {
+    try {
+        getAllPreviouslyClassifiedData().then((result) => {
+            res.json(result);
+        });
+    }
+    catch (e) {
+        res.status(500).send(e);
+    }
 });
 
 module.exports = router;

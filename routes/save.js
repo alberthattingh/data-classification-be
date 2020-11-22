@@ -40,7 +40,7 @@ function filterAndReformat(data, filename) {
 }
 
 async function addDataEntries(data) {
-    const client = new MongoClient(CONNECTION_STRING);
+    const client = new MongoClient(CONNECTION_STRING, { useUnifiedTopology: true });
 
     try {
         // Connect to the MongoDB cluster
