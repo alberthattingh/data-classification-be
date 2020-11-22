@@ -19,8 +19,8 @@ function filterAndReformat(data, filename) {
             if (field.isClassified) {
                 // Remove the actual data (like names, addresses, etc.) and only leave meta-data
                 // Only data about the data will remain, i.e. the type of data
+                field.isProtected = field.isClassified;
                 delete field.isClassified;
-                delete field.value;
 
                 field.FieldNumber = field.number;
                 delete field.number;
