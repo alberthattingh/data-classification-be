@@ -28,6 +28,8 @@ function filterAndReformat(data, filename) {
                 field.Category = field.category;
                 delete field.category;
 
+                delete field.value;
+
                 fields.push(field);
             }
         }
